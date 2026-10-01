@@ -8,6 +8,7 @@ import { datastoreCommand } from "./commands/datastore.js";
 import { productCommand } from "./commands/product.js";
 import { publishCommand } from "./commands/publish.js";
 import { serverCommand } from "./commands/server.js";
+import { updateCommand } from "./commands/update.js";
 import { CliError, enabledFeatures, setApiKeyOverride } from "./lib/config.js";
 import { examples } from "./lib/help.js";
 import { setJsonMode } from "./lib/output.js";
@@ -44,6 +45,7 @@ program.addCommand(productCommand());
 program.addCommand(publishCommand());
 program.addCommand(datastoreCommand());
 program.addCommand(serverCommand());
+program.addCommand(updateCommand(version));
 /** "datastore get" for `raven datastore get`. */
 function commandPath(cmd) {
     const names = [];

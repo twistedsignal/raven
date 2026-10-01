@@ -12,6 +12,13 @@ npm install -g https://github.com/twistedsignal/raven/archive/refs/heads/main.ta
 
 > `npm install -g github:twistedsignal/raven` currently leaves a broken install on npm 11 (npm links the package to a temporary clone and then deletes it), so use the tarball URL above.
 
+To update, run:
+
+```bash
+raven update          # install the latest version
+raven update --check  # just check whether there's a new one
+```
+
 Or from source:
 
 ```bash
