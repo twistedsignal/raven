@@ -2,6 +2,7 @@
 import { Command, CommanderError } from "commander";
 import pc from "picocolors";
 import { createRequire } from "node:module";
+import { assetCommand } from "./commands/asset.js";
 import { authCommand } from "./commands/auth.js";
 import { CliError, setApiKeyOverride } from "./lib/config.js";
 import { setJsonMode } from "./lib/output.js";
@@ -21,6 +22,7 @@ const program = new Command("raven")
   });
 
 program.addCommand(authCommand());
+program.addCommand(assetCommand());
 
 try {
   await program.parseAsync();

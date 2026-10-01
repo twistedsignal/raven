@@ -38,7 +38,7 @@ export function field(label: string, value: unknown): void {
 }
 
 export async function withSpinner<T>(text: string, fn: (spinner: Ora) => Promise<T>): Promise<T> {
-  const spinner = ora({ text, stream: process.stderr, isEnabled: !jsonMode && process.stderr.isTTY });
+  const spinner = ora({ text, stream: process.stderr, isSilent: jsonMode || !process.stderr.isTTY });
   spinner.start();
   try {
     const result = await fn(spinner);
