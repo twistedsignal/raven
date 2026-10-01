@@ -62,7 +62,7 @@ raven asset update --id 1234567890 --path sword_v2.fbx
 raven asset update --id 1234567890 --name "Better Sword" --description "Sharper"
 
 # Roll back to a previous version
-raven asset rollback --id 1234567890 --version 3
+raven asset rollback --id 1234567890 --to 3
 
 # Inspect
 raven asset get --id 1234567890

@@ -114,7 +114,7 @@ export function assetCommand(): Command {
       ["raven asset upload --path sword.fbx --creator user:123", "type is inferred from the extension"],
       ["raven asset upload --path logo.png --type Decal --name Logo --creator group:456"],
       ["raven asset update --id 987 --path sword_v2.fbx", "upload a new version"],
-      ["raven asset rollback --id 987 --version 3"],
+      ["raven asset rollback --id 987 --to 3"],
       ["raven asset versions --id 987"],
     ),
   );
@@ -219,15 +219,15 @@ export function assetCommand(): Command {
     .command("rollback")
     .description("roll an asset back to a previous version")
     .requiredOption("--id <assetId>", "asset ID", parseId)
-    .requiredOption("--version <number>", "version number to roll back to", parsePositiveInt)
-    .action(async (opts: { id: string; version: number }) => {
+    .requiredOption("--to <version>", "version number to roll back to", parsePositiveInt)
+    .action(async (opts: { id: string; to: number }) => {
+      const form = new FormData();
+      form.append("assetVersion", `assets/${opts.id}/versions/${opts.to}`);
       const result = await withSpinner(`Rolling back asset ${opts.id}...`, () =>
-        request<AssetVersion>("POST", `/assets/v1/assets/${opts.id}:rollback`, {
-          json: { assetVersion: `assets/${opts.id}/versions/${opts.version}` },
-        }),
+        request<AssetVersion>("POST", `/assets/v1/assets/${opts.id}/versions:rollback`, { body: form }),
       );
       output(result, () => {
-        success(`Rolled back asset ${pc.cyan(opts.id)} to version ${opts.version}`);
+        success(`Rolled back asset ${pc.cyan(opts.id)} to version ${opts.to}`);
         field("New version", result?.path?.split("/").pop());
       });
     });
