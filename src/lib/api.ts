@@ -81,11 +81,13 @@ function formatError(status: number, data: unknown): string {
     const d = data as Record<string, any>;
     detail =
       d.message ??
+      d.errorMessage ??
       d.errors?.[0]?.message ??
       d.error?.message ??
       (typeof d.error === "string" ? d.error : "") ??
       "";
-    if (d.code && typeof d.code === "string" && detail) detail = `${d.code}: ${detail}`;
+    const code = typeof d.code === "string" ? d.code : d.errorCode;
+    if (code && typeof code === "string" && detail) detail = `${code}: ${detail}`;
   } else if (typeof data === "string") {
     detail = data.trim().slice(0, 300);
   }

@@ -16,6 +16,7 @@ const PERMISSIONS: [api: string, scopes: string][] = [
   ["universe-datastores.objects", "List, Read, Create, Update, Delete"],
   ["universe-messaging-service", "Publish"],
   ["universe", "Write"],
+  ["game-pass", "Read, Write"],
 ];
 
 interface Introspection {

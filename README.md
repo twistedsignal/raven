@@ -86,6 +86,19 @@ raven datastore delete --universe 1234 --datastore Players --key user_1
 
 `datastore` can be shortened to `ds`. Use `--scope <name>` to target a scope other than `global`.
 
+### Game passes
+
+```bash
+raven gamepass add --universe 1234 --name "VIP" --description "VIP perks" --price 100 --icon vip.png
+raven gamepass update --universe 1234 --id 5678 --price 150 --name "VIP+"
+raven gamepass disable --universe 1234 --id 5678                     # take off sale
+raven gamepass enable --universe 1234 --id 5678                      # put back on sale
+raven gamepass list --universe 1234
+raven gamepass get --universe 1234 --id 5678
+```
+
+`gamepass` can be shortened to `gp`. Roblox doesn't allow deleting game passes, so `disable` takes the pass off sale instead; players who already own it keep it. `add` puts the pass on sale when you give it a `--price` (pass `--offsale` to skip that).
+
 ### Servers
 
 ```bash
@@ -120,6 +133,7 @@ raven --json datastore get -u 1234 -d Players -k user_1 | jq .value
 | `universe-datastores.objects` | List, Read, Create, Update, Delete | `datastore *`               |
 | `universe-messaging-service`  | Publish                            | `server message`            |
 | `universe`                    | Write                              | `server restart`            |
+| `game-pass`                   | Read, Write                        | `gamepass *`                |
 
 ## License
 
