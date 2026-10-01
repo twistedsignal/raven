@@ -149,11 +149,14 @@ function grantedMap(granted: GrantedScope[]): Map<string, Set<string>> {
   return map;
 }
 
+/** Scope names that differ from the API system name shown on the Creator Dashboard. */
+const SCOPE_NAMES: Record<string, string> = { assets: "asset" };
+
 /** Returns the permissions a feature needs that the key doesn't have. */
 function missingFor(feature: Feature, granted: Map<string, Set<string>>): string[] {
   const missing: string[] = [];
   for (const [api, ops] of feature.scopes) {
-    const have = granted.get(api);
+    const have = granted.get(SCOPE_NAMES[api] ?? api) ?? granted.get(api);
     const lacking = have ? ops.filter((o) => !have.has(o.toLowerCase())) : ops;
     if (lacking.length) missing.push(`${api}: ${lacking.join(", ")}`);
   }
