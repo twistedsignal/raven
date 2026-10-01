@@ -1,0 +1,46 @@
+{
+  "name": "@twistedsignal/raven",
+  "version": "0.1.0",
+  "description": "A CLI for the Roblox Open Cloud API",
+  "license": "MIT",
+  "author": "Twisted Signal",
+  "type": "module",
+  "bin": {
+    "raven": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "roblox",
+    "opencloud",
+    "open-cloud",
+    "cli",
+    "datastore",
+    "assets"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twistedsignal/raven.git"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.2",
+    "commander": "^15.0.0",
+    "ora": "^9.4.1",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2"
+  }
+}
