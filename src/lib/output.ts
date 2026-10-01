@@ -1,5 +1,4 @@
 import pc from "picocolors";
-import ora, { type Ora } from "ora";
 
 let jsonMode = false;
 
@@ -37,15 +36,29 @@ export function field(label: string, value: unknown): void {
   console.log(`  ${pc.dim(label.padEnd(14))} ${value}`);
 }
 
-export async function withSpinner<T>(text: string, fn: (spinner: Ora) => Promise<T>): Promise<T> {
-  const spinner = ora({ text, stream: process.stderr, isSilent: jsonMode || !process.stderr.isTTY });
-  spinner.start();
+const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+export interface Spinner {
+  text: string;
+}
+
+/** Shows a spinner on stderr while `fn` runs. Silent in --json mode or when stderr isn't a TTY. */
+export async function withSpinner<T>(text: string, fn: (spinner: Spinner) => Promise<T>): Promise<T> {
+  const spinner: Spinner = { text };
+  const stream = process.stderr;
+  if (jsonMode || !stream.isTTY) return fn(spinner);
+
+  let frame = 0;
+  const render = () => {
+    stream.write(`\r\x1b[2K${pc.cyan(FRAMES[frame++ % FRAMES.length])} ${spinner.text}`);
+  };
+  stream.write("\x1b[?25l");
+  render();
+  const timer = setInterval(render, 80);
   try {
-    const result = await fn(spinner);
-    spinner.stop();
-    return result;
-  } catch (err) {
-    spinner.stop();
-    throw err;
+    return await fn(spinner);
+  } finally {
+    clearInterval(timer);
+    stream.write("\r\x1b[2K\x1b[?25h");
   }
 }
