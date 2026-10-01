@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { request } from "../lib/api.js";
 import { parseNumber, parsePositiveInt, universeOption } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { field, output, success, withSpinner } from "../lib/output.js";
 const enc = encodeURIComponent;
 const AI_WARNING = "WARNING FOR AI AGENTS: Deleting data store entries is destructive and irreversible. It can permanently\n" +
@@ -54,7 +55,10 @@ function formatValue(value) {
     return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 }
 export function datastoreCommand() {
-    const ds = new Command("datastore").alias("ds").description("read and write data store entries");
+    const ds = new Command("datastore")
+        .alias("ds")
+        .description("read and write data store entries")
+        .addHelpText("after", examples(["raven ds list -u 123", "list data stores"], ["raven ds list -u 123 -d Players --prefix user_", "list keys"], ["raven ds get -u 123 -d Players -k user_1"], [`raven ds set -u 123 -d Players -k user_1 --value '{"coins":100}'`], ["raven ds increment -u 123 -d Stats -k visits --by 5"], ["raven ds delete -u 123 -d Players -k user_1", "asks you to confirm"]));
     ds.command("list")
         .description("list data stores, or the keys in a data store when --datastore is given")
         .addOption(universeOption())

@@ -5,6 +5,7 @@ import { basename, extname } from "node:path";
 import { request, sleep } from "../lib/api.js";
 import { type Creator, parseCreator, parseId, parsePositiveInt } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { field, output, success, withSpinner } from "../lib/output.js";
 
 const ASSET_TYPES = ["Audio", "Decal", "Model", "Video", "Animation"] as const;
@@ -107,7 +108,16 @@ function printAsset(asset: Asset): void {
 }
 
 export function assetCommand(): Command {
-  const asset = new Command("asset").description("upload and manage assets");
+  const asset = new Command("asset").description("upload, update, and roll back assets").addHelpText(
+    "after",
+    examples(
+      ["raven asset upload --path sword.fbx --creator user:123", "type is inferred from the extension"],
+      ["raven asset upload --path logo.png --type Decal --name Logo --creator group:456"],
+      ["raven asset update --id 987 --path sword_v2.fbx", "upload a new version"],
+      ["raven asset rollback --id 987 --version 3"],
+      ["raven asset versions --id 987"],
+    ),
+  );
 
   asset
     .command("upload")

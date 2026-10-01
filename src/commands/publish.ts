@@ -5,6 +5,7 @@ import { basename, extname } from "node:path";
 import { request } from "../lib/api.js";
 import { placeOption, universeOption } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { field, output, success, withSpinner } from "../lib/output.js";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -19,6 +20,13 @@ export function publishCommand(): Command {
     .addOption(universeOption())
     .addOption(placeOption())
     .option("--saved", "save the version without publishing it live")
+    .addHelpText(
+      "after",
+      examples(
+        ["raven publish --path game.rbxlx --universe 123 --place 456"],
+        ["raven publish --path game.rbxl -u 123 -p 456 --saved", "save without going live"],
+      ),
+    )
     .action(async (opts: { path: string; universe: string; place: string; saved?: boolean }) => {
       const contentType = CONTENT_TYPES[extname(opts.path).toLowerCase()];
       if (!contentType) throw new CliError("Place files must be .rbxl or .rbxlx.");

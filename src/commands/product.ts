@@ -5,6 +5,7 @@ import { basename, extname } from "node:path";
 import { request } from "../lib/api.js";
 import { parseId, parsePositiveInt, universeOption } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { field, output, success, withSpinner } from "../lib/output.js";
 
 type ProductType = "gamepass" | "devProduct";
@@ -163,7 +164,20 @@ function managedPricingOptions(cmd: Command): Command {
 }
 
 export function productCommand(): Command {
-  const product = new Command("product").description("create and manage game passes and developer products");
+  const product = new Command("product")
+    .description("create and manage game passes and developer products")
+    .addHelpText(
+      "after",
+      `
+Every subcommand needs --type gamepass or --type devProduct.
+${examples(
+  ["raven product add -t gamepass -u 123 --name VIP --price 100 --icon vip.png"],
+  ["raven product add -t devProduct -u 123 --name Coins --price 25 --managed-pricing"],
+  ["raven product update -t devProduct -u 123 --id 456 --no-managed-pricing"],
+  ["raven product disable -t gamepass -u 123 --id 456", "take off sale"],
+  ["raven product list -t devProduct -u 123"],
+)}`,
+    );
 
   managedPricingOptions(
     product

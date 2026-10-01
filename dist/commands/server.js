@@ -4,9 +4,12 @@ import pc from "picocolors";
 import { request } from "../lib/api.js";
 import { universeOption } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { output, success, withSpinner } from "../lib/output.js";
 export function serverCommand() {
-    const server = new Command("server").description("manage live game servers");
+    const server = new Command("server")
+        .description("restart servers and message them")
+        .addHelpText("after", examples(["raven server restart --universe 123"], [`raven server message -u 123 --topic Announcements --message "Restarting soon"`]));
     server
         .command("restart")
         .description("restart all servers running an outdated version of the experience")

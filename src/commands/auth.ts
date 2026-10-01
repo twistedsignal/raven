@@ -5,20 +5,11 @@ import { createInterface } from "node:readline/promises";
 import { ApiError, request } from "../lib/api.js";
 import { openBrowser } from "../lib/browser.js";
 import { clearCredentials, CliError, credentialsPath, loadCredentials, saveCredentials } from "../lib/config.js";
+import { examples } from "../lib/help.js";
 import { field, output, success, withSpinner } from "../lib/output.js";
+import { printCommandAccess, printPermissionTable } from "../lib/permissions.js";
 
 const CREDENTIALS_URL = "https://create.roblox.com/dashboard/credentials?activeTab=ApiKeysTab";
-
-const PERMISSIONS: [api: string, scopes: string][] = [
-  ["assets", "Read, Write"],
-  ["universe-places", "Write"],
-  ["universe-datastores.control", "List"],
-  ["universe-datastores.objects", "List, Read, Create, Update, Delete"],
-  ["universe-messaging-service", "Publish"],
-  ["universe", "Write"],
-  ["game-pass", "Read, Write"],
-  ["developer-product", "Read, Write"],
-];
 
 interface Introspection {
   name?: string;
@@ -56,15 +47,14 @@ async function login(): Promise<void> {
   if (!opened) console.log(pc.dim(`  Couldn't open a browser. Visit the link above manually.`));
 
   console.log();
-  console.log(`Click ${pc.bold("Create API Key")}, give it a name, and add the following permissions:`);
+  console.log(`Click ${pc.bold("Create API Key")}, give it a name, then click ${pc.bold("Add API System")} and add:`);
   console.log();
-  for (const [api, scopes] of PERMISSIONS) {
-    console.log(`  ${pc.cyan("•")} ${pc.bold(api.padEnd(30))} ${pc.dim(scopes)}`);
-  }
+  printPermissionTable();
   console.log();
+  console.log(pc.dim("  You only need the permissions for the commands you plan to use."));
   console.log(pc.dim("  For each API system, select the experiences you want Raven to manage."));
   console.log(pc.dim("  Under Security, add your IP address (or 0.0.0.0/0 to allow any IP)."));
-  console.log(pc.dim("  You only need the permissions for the commands you plan to use."));
+  console.log(pc.dim(`  Click ${pc.bold("Save & Generate Key")}, then copy the key.`));
   console.log();
   await pressEnter(`${pc.cyan("?")} Press ${pc.bold("Enter")} once you've created and copied the key `);
   console.log();
@@ -103,14 +93,26 @@ async function login(): Promise<void> {
   console.log(`You are now logged into Raven${info.name ? ` with key ${pc.cyan(info.name)}` : ""}.`);
   if (info.scopes?.length) {
     console.log();
-    console.log(pc.dim("Granted permissions:"));
-    for (const s of info.scopes) console.log(pc.dim(`  ${s.name}: ${s.operations.join(", ")}`));
+    printCommandAccess(info.scopes);
   }
 }
 
 export function authCommand(): Command {
   const auth = new Command("auth")
-    .description("log in to Raven with a Roblox Open Cloud API key")
+    .description("log in with a Roblox Open Cloud API key")
+    .addHelpText(
+      "after",
+      `
+Running \`raven auth\` walks you through creating an API key and saves it.
+
+${examples(
+  ["raven auth", "log in interactively"],
+  ["raven auth status", "show the saved key and which commands it can use"],
+  ["raven auth logout", "remove the saved key"],
+)}
+
+In CI, set RAVEN_API_KEY instead of running \`raven auth\`.`,
+    )
     .action(login);
 
   auth
@@ -127,10 +129,8 @@ export function authCommand(): Command {
         field("Expires", info.expirationTime ?? "never");
         field("Saved", creds.savedAt);
         field("Stored at", credentialsPath());
-        if (info.scopes?.length) {
-          console.log(`  ${pc.dim("Permissions")}`);
-          for (const s of info.scopes) console.log(`    ${s.name}: ${pc.dim(s.operations.join(", "))}`);
-        }
+        console.log();
+        printCommandAccess(info.scopes);
       });
     });
 

@@ -32,7 +32,7 @@ raven auth
 Raven walks you through creating an Open Cloud API key on the Creator Dashboard, tells you which permissions to give it, then verifies and saves it.
 
 ```bash
-raven auth status   # show the saved key and its permissions
+raven auth status   # show the saved key and which commands it can use
 raven auth logout   # remove the saved key
 ```
 
