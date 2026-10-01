@@ -19,6 +19,8 @@ pnpm install && pnpm build
 npm link
 ```
 
+The compiled `dist/` is committed so installing from GitHub doesn't need a build step. If you change anything in `src/`, run `pnpm build` and commit `dist/` with it; CI fails if it's out of date.
+
 ## Logging in
 
 ```bash

@@ -15,12 +15,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc && chmod +x dist/index.js",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
-    "prepublishOnly": "pnpm build",
-    "prepare": "tsc"
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "roblox",
@@ -42,5 +41,6 @@
   "devDependencies": {
     "@types/node": "^26.6.3",
     "typescript": "^7.0.2"
-  }
+  },
+  "packageManager": "pnpm@11.28.2"
 }
