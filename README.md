@@ -7,8 +7,10 @@ A CLI for the [Roblox Open Cloud API](https://create.roblox.com/docs/cloud). Upl
 Requires Node.js 20 or newer.
 
 ```bash
-npm install -g github:twistedsignal/raven
+npm install -g https://github.com/twistedsignal/raven/archive/refs/heads/main.tar.gz
 ```
+
+> `npm install -g github:twistedsignal/raven` currently leaves a broken install on npm 11 (npm links the package to a temporary clone and then deletes it), so use the tarball URL above.
 
 Or from source:
 
