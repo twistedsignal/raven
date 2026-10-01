@@ -4,6 +4,9 @@ import pc from "picocolors";
 import { createRequire } from "node:module";
 import { assetCommand } from "./commands/asset.js";
 import { authCommand } from "./commands/auth.js";
+import { datastoreCommand } from "./commands/datastore.js";
+import { publishCommand } from "./commands/publish.js";
+import { serverCommand } from "./commands/server.js";
 import { CliError, setApiKeyOverride } from "./lib/config.js";
 import { setJsonMode } from "./lib/output.js";
 
@@ -23,6 +26,9 @@ const program = new Command("raven")
 
 program.addCommand(authCommand());
 program.addCommand(assetCommand());
+program.addCommand(publishCommand());
+program.addCommand(datastoreCommand());
+program.addCommand(serverCommand());
 
 try {
   await program.parseAsync();
