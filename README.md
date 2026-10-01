@@ -29,10 +29,11 @@ The compiled `dist/` is committed so installing from GitHub doesn't need a build
 raven auth
 ```
 
-Raven walks you through creating an Open Cloud API key on the Creator Dashboard, tells you which permissions to give it, then verifies and saves it.
+Raven asks which commands you want to use, tells you exactly which permissions to give your Open Cloud API key for those, then verifies and saves it. Commands you didn't pick are disabled (and marked as such in `raven -h`), so your key only ever needs the permissions you actually use.
 
 ```bash
-raven auth status   # show the saved key and which commands it can use
+raven auth commands # change which commands are enabled
+raven auth status   # show the saved key and enabled commands
 raven auth logout   # remove the saved key
 ```
 
@@ -130,16 +131,22 @@ raven --json datastore get -u 1234 -d Players -k user_1 | jq .value
 
 ## API key permissions
 
-| API system                    | Operations                         | Used by                     |
-| ----------------------------- | ---------------------------------- | --------------------------- |
-| `assets`                      | Read, Write                        | `asset *`                   |
-| `universe-places`             | Write                              | `publish`                   |
-| `universe-datastores.control` | List                               | `datastore list`            |
-| `universe-datastores.objects` | List, Read, Create, Update, Delete | `datastore *`               |
-| `universe-messaging-service`  | Publish                            | `server message`            |
-| `universe`                    | Write                              | `server restart`            |
-| `game-pass`                   | Read, Write                        | `product --type gamepass`   |
-| `developer-product`           | Read, Write                        | `product --type devProduct` |
+`raven auth` shows only the permissions for the commands you pick. For reference:
+
+| Command                                      | API system                    | Operations        |
+| -------------------------------------------- | ----------------------------- | ----------------- |
+| `asset`                                      | `assets`                      | Read, Write       |
+| `product --type gamepass`                    | `game-pass`                   | Read, Write       |
+| `product --type devProduct`                  | `developer-product`           | Read, Write       |
+| `publish`                                    | `universe-places`             | Write             |
+| `datastore list`, `datastore get`            | `universe-datastores.control` | List              |
+|                                              | `universe-datastores.objects` | List, Read        |
+| `datastore set`, `datastore increment`       | `universe-datastores.objects` | Create, Update    |
+| `datastore delete`                           | `universe-datastores.objects` | Delete            |
+| `server restart`                             | `universe`                    | Write             |
+| `server message`                             | `universe-messaging-service`  | Publish           |
+
+When you use `RAVEN_API_KEY` or `--api-key`, every command is enabled.
 
 ## License
 

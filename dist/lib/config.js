@@ -1,6 +1,7 @@
 import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { FEATURE_IDS } from "./permissions.js";
 export function configDir() {
     if (process.env.RAVEN_CONFIG_DIR)
         return process.env.RAVEN_CONFIG_DIR;
@@ -49,6 +50,16 @@ export async function resolveApiKey() {
     if (creds)
         return creds.apiKey;
     throw new CliError("You are not logged in. Run `raven auth` to log in, or set RAVEN_API_KEY.");
+}
+/**
+ * The features enabled for the saved key, or undefined if every command is allowed
+ * (a key passed via --api-key / RAVEN_API_KEY, or a login from before features existed).
+ */
+export async function enabledFeatures() {
+    if (overrideKey || process.env.RAVEN_API_KEY)
+        return undefined;
+    const features = (await loadCredentials())?.features;
+    return features?.filter((f) => FEATURE_IDS.includes(f));
 }
 export class CliError extends Error {
 }

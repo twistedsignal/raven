@@ -8,9 +8,10 @@ import { datastoreCommand } from "./commands/datastore.js";
 import { productCommand } from "./commands/product.js";
 import { publishCommand } from "./commands/publish.js";
 import { serverCommand } from "./commands/server.js";
-import { CliError, setApiKeyOverride } from "./lib/config.js";
+import { CliError, enabledFeatures, setApiKeyOverride } from "./lib/config.js";
 import { examples } from "./lib/help.js";
 import { setJsonMode } from "./lib/output.js";
+import { featuresFor } from "./lib/permissions.js";
 const { version } = createRequire(import.meta.url)("../package.json");
 const program = new Command("raven")
     .description("A CLI for the Roblox Open Cloud API.")
@@ -31,10 +32,11 @@ Environment:
   RAVEN_CREATOR       default for --creator
 
 Docs: ${pc.underline("https://github.com/twistedsignal/raven")}`)
-    .hook("preAction", (cmd) => {
+    .hook("preAction", async (cmd, actionCommand) => {
     const opts = cmd.optsWithGlobals();
     setApiKeyOverride(opts.apiKey);
     setJsonMode(Boolean(opts.json));
+    await assertEnabled(actionCommand);
 });
 program.addCommand(authCommand());
 program.addCommand(assetCommand());
@@ -42,6 +44,49 @@ program.addCommand(productCommand());
 program.addCommand(publishCommand());
 program.addCommand(datastoreCommand());
 program.addCommand(serverCommand());
+/** "datastore get" for `raven datastore get`. */
+function commandPath(cmd) {
+    const names = [];
+    for (let c = cmd; c && c !== program; c = c.parent)
+        names.unshift(c.name());
+    return names.join(" ");
+}
+/** Blocks commands that weren't enabled during `raven auth`. */
+async function assertEnabled(cmd) {
+    const path = commandPath(cmd);
+    if (path === "auth" || path.startsWith("auth "))
+        return;
+    const enabled = await enabledFeatures();
+    if (!enabled)
+        return;
+    const type = cmd.opts().type;
+    const features = featuresFor(path, path.startsWith("product") ? type : undefined);
+    if (features.length && !features.some((f) => enabled.includes(f.id))) {
+        const name = `raven ${path}${path.startsWith("product") && type ? ` --type ${type}` : ""}`;
+        throw new CliError(`\`${name}\` is disabled. Run \`raven auth commands\` to enable it.`);
+    }
+}
+/** Marks commands that aren't enabled for the saved key in the help output. */
+function annotateDisabled(cmd, enabled) {
+    for (const sub of cmd.commands) {
+        const path = commandPath(sub);
+        if (path === "auth" || path === "help")
+            continue;
+        const features = featuresFor(path);
+        const on = features.filter((f) => enabled.includes(f.id));
+        if (features.length && !on.length) {
+            sub.description(`${sub.description()} ${pc.dim("(disabled)")}`);
+        }
+        else if (on.length < features.length && on.every((f) => f.productType)) {
+            sub.description(`${sub.description()} ${pc.dim(`(${on.map((f) => f.productType).join(", ")} only)`)}`);
+        }
+        annotateDisabled(sub, enabled);
+    }
+}
+const usingOverride = process.env.RAVEN_API_KEY || process.argv.some((a) => a === "--api-key" || a.startsWith("--api-key="));
+const enabled = usingOverride ? undefined : await enabledFeatures();
+if (enabled)
+    annotateDisabled(program, enabled);
 try {
     await program.parseAsync();
 }

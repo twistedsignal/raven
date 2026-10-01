@@ -1,11 +1,14 @@
 import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { FEATURE_IDS, type FeatureId } from "./permissions.js";
 
 export interface Credentials {
   apiKey: string;
   name?: string;
   ownerId?: string;
+  /** Commands enabled during `raven auth`. Missing means everything is enabled (older logins). */
+  features?: FeatureId[];
   savedAt: string;
 }
 
@@ -59,6 +62,16 @@ export async function resolveApiKey(): Promise<string> {
   const creds = await loadCredentials();
   if (creds) return creds.apiKey;
   throw new CliError("You are not logged in. Run `raven auth` to log in, or set RAVEN_API_KEY.");
+}
+
+/**
+ * The features enabled for the saved key, or undefined if every command is allowed
+ * (a key passed via --api-key / RAVEN_API_KEY, or a login from before features existed).
+ */
+export async function enabledFeatures(): Promise<FeatureId[] | undefined> {
+  if (overrideKey || process.env.RAVEN_API_KEY) return undefined;
+  const features = (await loadCredentials())?.features;
+  return features?.filter((f) => FEATURE_IDS.includes(f));
 }
 
 export class CliError extends Error {}
