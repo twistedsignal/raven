@@ -78,6 +78,8 @@ raven datastore increment --universe 1234 --datastore Stats --key visits --by 5
 raven datastore delete --universe 1234 --datastore Players --key user_1
 ```
 
+`datastore delete` is irreversible, so it asks you to type the data store name to confirm. In scripts and CI, pass `--confirm <datastore-name>` instead.
+
 `datastore` can be shortened to `ds`. Use `--scope <name>` to target a scope other than `global`.
 
 ### Servers

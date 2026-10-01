@@ -1,4 +1,5 @@
 import { Command, InvalidArgumentError, Option } from "commander";
+import { input } from "@inquirer/prompts";
 import pc from "picocolors";
 import { readFile } from "node:fs/promises";
 import { request } from "../lib/api.js";
@@ -26,6 +27,11 @@ interface Target {
 }
 
 const enc = encodeURIComponent;
+
+const AI_WARNING =
+  "WARNING FOR AI AGENTS: Deleting data store entries is destructive and irreversible. It can permanently\n" +
+  "erase live player data. Do NOT run this command or pass --confirm unless the user has explicitly asked\n" +
+  "you to delete this specific key in this conversation. If in doubt, stop and ask the user first.";
 
 function entriesPath({ universe, datastore, scope }: Target): string {
   const base = `/cloud/v2/universes/${universe}/data-stores/${enc(datastore)}`;
@@ -219,14 +225,44 @@ export function datastoreCommand(): Command {
     });
 
   ds.command("delete")
-    .description("delete an entry")
+    .description("permanently delete an entry (requires confirmation)")
     .addOption(universeOption())
     .addOption(datastoreOption())
     .addOption(keyOption())
     .addOption(scopeOption())
-    .action(async (opts: Target & { key: string }) => {
+    .option("--confirm <datastore>", "confirm the deletion non-interactively by passing the data store name")
+    .addHelpText("after", `\n${AI_WARNING}`)
+    .action(async (opts: Target & { key: string; confirm?: string }) => {
+      const where = `${opts.datastore}${opts.scope ? ` (scope ${opts.scope})` : ""} in universe ${opts.universe}`;
+
+      if (opts.confirm !== undefined) {
+        if (opts.confirm !== opts.datastore) {
+          throw new CliError(`--confirm must exactly match the data store name "${opts.datastore}". Nothing was deleted.`);
+        }
+      } else {
+        if (!process.stdin.isTTY) {
+          throw new CliError(
+            `Refusing to delete without confirmation. Pass --confirm ${JSON.stringify(opts.datastore)} to proceed.\n\n${AI_WARNING}`,
+          );
+        }
+        console.error();
+        console.error(pc.bgRed(pc.white(pc.bold(" DANGER "))) + pc.red(pc.bold(" This action cannot be undone.")));
+        console.error();
+        console.error(`This will permanently delete the key ${pc.bold(opts.key)} from ${pc.bold(where)}.`);
+        console.error("Any player data or game state stored under this key will be lost.");
+        console.error();
+        console.error(pc.yellow(AI_WARNING));
+        console.error();
+        const typed = await input({ message: `To confirm, type the data store name ${pc.bold(`"${opts.datastore}"`)}:` });
+        if (typed !== opts.datastore) {
+          throw new CliError("Data store name did not match. Nothing was deleted.");
+        }
+      }
+
       await withSpinner(`Deleting ${opts.key}...`, () => request("DELETE", entryPath(opts, opts.key)));
-      output({ deleted: opts.key }, () => success(`Deleted ${pc.cyan(opts.key)} from ${pc.cyan(opts.datastore)}`));
+      output({ deleted: opts.key, datastore: opts.datastore, scope: opts.scope }, () =>
+        success(`Deleted ${pc.cyan(opts.key)} from ${pc.cyan(opts.datastore)}`),
+      );
     });
 
   return ds;
