@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { assetCommand } from "./commands/asset.js";
 import { authCommand } from "./commands/auth.js";
 import { datastoreCommand } from "./commands/datastore.js";
-import { gamepassCommand } from "./commands/gamepass.js";
+import { productCommand } from "./commands/product.js";
 import { publishCommand } from "./commands/publish.js";
 import { serverCommand } from "./commands/server.js";
 import { CliError, setApiKeyOverride } from "./lib/config.js";
@@ -30,7 +30,7 @@ program.addCommand(assetCommand());
 program.addCommand(publishCommand());
 program.addCommand(datastoreCommand());
 program.addCommand(serverCommand());
-program.addCommand(gamepassCommand());
+program.addCommand(productCommand());
 
 try {
   await program.parseAsync();

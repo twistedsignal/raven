@@ -15,6 +15,7 @@ const PERMISSIONS = [
     ["universe-messaging-service", "Publish"],
     ["universe", "Write"],
     ["game-pass", "Read, Write"],
+    ["developer-product", "Read, Write"],
 ];
 export async function introspect(apiKey) {
     return request("POST", "/api-keys/v1/introspect", { json: { apiKey }, noAuth: true });

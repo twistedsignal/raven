@@ -17,6 +17,7 @@ const PERMISSIONS: [api: string, scopes: string][] = [
   ["universe-messaging-service", "Publish"],
   ["universe", "Write"],
   ["game-pass", "Read, Write"],
+  ["developer-product", "Read, Write"],
 ];
 
 interface Introspection {

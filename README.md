@@ -86,18 +86,23 @@ raven datastore delete --universe 1234 --datastore Players --key user_1
 
 `datastore` can be shortened to `ds`. Use `--scope <name>` to target a scope other than `global`.
 
-### Game passes
+### Game passes and developer products
+
+Every `product` command takes `--type gamepass` or `--type devProduct`.
 
 ```bash
-raven gamepass add --universe 1234 --name "VIP" --description "VIP perks" --price 100 --icon vip.png
-raven gamepass update --universe 1234 --id 5678 --price 150 --name "VIP+"
-raven gamepass disable --universe 1234 --id 5678                     # take off sale
-raven gamepass enable --universe 1234 --id 5678                      # put back on sale
-raven gamepass list --universe 1234
-raven gamepass get --universe 1234 --id 5678
+raven product add --type gamepass --universe 1234 --name "VIP" --description "VIP perks" --price 100 --icon vip.png
+raven product add --type devProduct --universe 1234 --name "100 Coins" --price 25 --managed-pricing
+raven product update --type devProduct --universe 1234 --id 5678 --price 30 --no-managed-pricing
+raven product disable --type gamepass --universe 1234 --id 5678      # take off sale
+raven product enable --type gamepass --universe 1234 --id 5678       # put back on sale
+raven product list --type devProduct --universe 1234
+raven product get --type gamepass --universe 1234 --id 5678
 ```
 
-`gamepass` can be shortened to `gp`. Roblox doesn't allow deleting game passes, so `disable` takes the pass off sale instead; players who already own it keep it. `add` puts the pass on sale when you give it a `--price` (pass `--offsale` to skip that).
+- `--managed-pricing` / `--no-managed-pricing` turns Roblox's managed (regional) pricing on or off. Leave both out to keep the current setting.
+- `add` puts the product on sale when you give it a `--price` (pass `--offsale` to skip that).
+- Roblox doesn't allow deleting game passes or developer products, so `disable` takes them off sale instead. Players who already own a game pass keep it.
 
 ### Servers
 
@@ -133,7 +138,8 @@ raven --json datastore get -u 1234 -d Players -k user_1 | jq .value
 | `universe-datastores.objects` | List, Read, Create, Update, Delete | `datastore *`               |
 | `universe-messaging-service`  | Publish                            | `server message`            |
 | `universe`                    | Write                              | `server restart`            |
-| `game-pass`                   | Read, Write                        | `gamepass *`                |
+| `game-pass`                   | Read, Write                        | `product --type gamepass`   |
+| `developer-product`           | Read, Write                        | `product --type devProduct` |
 
 ## License
 
