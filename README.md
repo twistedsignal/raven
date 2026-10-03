@@ -1,6 +1,6 @@
 # Raven
 
-A CLI for the [Roblox Open Cloud API](https://create.roblox.com/docs/cloud). Upload assets, publish places, edit data stores, and manage live servers from your terminal or CI.
+A CLI for the [Roblox Open Cloud API](https://create.roblox.com/docs/cloud). Download and upload assets, publish places, edit data stores, and manage live servers from your terminal or CI.
 
 ## Install
 
@@ -52,6 +52,10 @@ Run `raven -h` or `raven <command> -h` for the full list of options.
 
 ```bash
 # Upload (type is inferred from the extension if --type is omitted)
+# Download asset bytes, using Legacy Assets > Manage permission
+raven asset download --id 1234567890 --output mesh.bin
+raven --json asset download --id 1234567890 --output mesh.bin
+
 raven asset upload --path sword.fbx --type Model --name "Sword" --description "A sword" --creator user:12345
 raven asset upload --path logo.png --creator group:67890
 
@@ -140,7 +144,8 @@ raven --json datastore get -u 1234 -d Players -k user_1 | jq .value
 
 | Command                                      | API system                    | Operations        |
 | -------------------------------------------- | ----------------------------- | ----------------- |
-| `asset`                                      | `assets`                      | Read, Write       |
+| `asset download`                             | `legacy-asset`                | Manage            |
+| `asset upload/update/rollback/get/versions`   | `assets`                      | Read, Write       |
 | `product --type gamepass`                    | `game-pass`                   | Read, Write       |
 | `product --type devProduct`                  | `developer-product`           | Read, Write       |
 | `publish`                                    | `universe-places`             | Write             |
@@ -156,3 +161,13 @@ When you use `RAVEN_API_KEY` or `--api-key`, every command is enabled.
 ## License
 
 [MIT](LICENSE) © 2026 Twisted Signal
+
+Asset downloads use the Open Cloud Asset Delivery endpoint. Add **Legacy Assets > Manage** to your personal API key and enable the download feature with `raven auth commands` or `raven auth enable --feature asset-download`. Uploads retain their existing Assets permissions. JSON downloads return `{assetId, path, bytes}` after writing the binary file atomically. CDN requests never include the API key.
+
+Development checks:
+
+```sh
+pnpm typecheck
+pnpm build
+node --test tests/*.mjs
+```

@@ -2,6 +2,7 @@ import pc from "picocolors";
 
 export type FeatureId =
   | "asset"
+  | "asset-download"
   | "gamepass"
   | "devProduct"
   | "publish"
@@ -26,8 +27,14 @@ export const FEATURES: Feature[] = [
   {
     id: "asset",
     name: "Assets: upload, update, and roll back",
-    commands: ["asset"],
+    commands: ["asset upload", "asset update", "asset rollback", "asset get", "asset versions"],
     scopes: [["assets", ["Read", "Write"]]],
+  },
+  {
+    id: "asset-download",
+    name: "Assets: download content",
+    commands: ["asset download"],
+    scopes: [["legacy-asset", ["Manage"]]],
   },
   {
     id: "gamepass",
@@ -106,7 +113,7 @@ export function featuresFor(path: string, productType?: string): Feature[] {
 
 /** Merges the scopes of several features into one list per API system. */
 function mergeScopes(features: Feature[]): [api: string, operations: string[]][] {
-  const ORDER = ["List", "Read", "Create", "Update", "Delete", "Write", "Publish"];
+  const ORDER = ["List", "Read", "Create", "Update", "Delete", "Write", "Publish", "Manage"];
   const merged = new Map<string, Set<string>>();
   for (const f of features) {
     for (const [api, ops] of f.scopes) {

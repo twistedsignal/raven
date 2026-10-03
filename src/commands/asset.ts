@@ -2,6 +2,7 @@ import { Command, InvalidArgumentError, Option } from "commander";
 import pc from "picocolors";
 import { readFile } from "node:fs/promises";
 import { basename, extname } from "node:path";
+import { downloadAsset } from "../lib/download.js";
 import { request, sleep } from "../lib/api.js";
 import { type Creator, parseCreator, parseId, parsePositiveInt } from "../lib/args.js";
 import { CliError } from "../lib/config.js";
@@ -108,7 +109,7 @@ function printAsset(asset: Asset): void {
 }
 
 export function assetCommand(): Command {
-  const asset = new Command("asset").description("upload, update, and roll back assets").addHelpText(
+  const asset = new Command("asset").description("download, upload, update, and roll back assets").addHelpText(
     "after",
     examples(
       ["raven asset upload --path sword.fbx --creator user:123", "type is inferred from the extension"],
@@ -118,6 +119,16 @@ export function assetCommand(): Command {
       ["raven asset versions --id 987"],
     ),
   );
+
+  asset
+    .command("download")
+    .description("download asset content using Legacy Assets Manage permission")
+    .requiredOption("--id <id>", "asset ID", parseId)
+    .requiredOption("--output <file>", "destination file")
+    .action(async (opts) => {
+      const result = await withSpinner("Downloading asset…", () => downloadAsset(opts.id, opts.output));
+      output(result, () => success(`Downloaded ${result.assetId} to ${result.path} (${result.bytes} bytes)`));
+    });
 
   asset
     .command("upload")

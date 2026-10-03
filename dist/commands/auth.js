@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { checkbox, password } from "@inquirer/prompts";
 import pc from "picocolors";
 import { createInterface } from "node:readline/promises";
@@ -145,6 +145,23 @@ In CI, set RAVEN_API_KEY instead of running \`raven auth\`. All commands are
 enabled when using RAVEN_API_KEY or --api-key.`)
         .action(login);
     auth.command("commands").description("choose which commands are enabled").action(changeCommands);
+    auth
+        .command("enable")
+        .description("enable one command feature without opening a prompt")
+        .addOption(new Option("--feature <feature>", "feature to enable").choices(FEATURE_IDS).makeOptionMandatory())
+        .action(async (opts) => {
+        if (process.env.RAVEN_API_KEY) {
+            output({ enabled: opts.feature }, () => success("Environment keys already enable every command."));
+            return;
+        }
+        const creds = await loadCredentials();
+        if (!creds)
+            throw new CliError("No saved key. Run `raven auth` or set RAVEN_API_KEY.");
+        const features = creds.features ?? FEATURE_IDS;
+        if (!features.includes(opts.feature))
+            await saveCredentials({ ...creds, features: [...features, opts.feature] });
+        output({ enabled: opts.feature }, () => success(`Enabled ${opts.feature}. The key still needs its API permissions.`));
+    });
     auth
         .command("status")
         .description("show the saved API key and enabled commands")

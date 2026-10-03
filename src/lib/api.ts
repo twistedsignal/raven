@@ -22,6 +22,8 @@ export interface RequestOptions {
   apiKey?: string;
   /** Skip attaching the x-api-key header (for endpoints that take the key in the body). */
   noAuth?: boolean;
+  timeout?: number;
+  noRedirect?: boolean;
 }
 
 const MAX_RETRIES = 3;
@@ -48,7 +50,7 @@ export async function request<T = unknown>(
   for (let attempt = 0; ; attempt++) {
     let res: Response;
     try {
-      res = await fetch(url, { method, headers, body });
+      res = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(opts.timeout ?? 30_000), redirect: opts.noRedirect ? "error" : "follow" });
     } catch (err) {
       throw new CliError(`Network error contacting ${url.host}: ${(err as Error).message}`);
     }
@@ -56,11 +58,17 @@ export async function request<T = unknown>(
     if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
       const retryAfter = Number(res.headers.get("retry-after"));
       const delay = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000 * 2 ** attempt;
-      await sleep(delay);
+      await res.body?.cancel();
+      await sleep(Math.min(delay, 10_000));
       continue;
     }
 
-    const text = await res.text();
+    let text: string;
+    try {
+      text = await res.text();
+    } catch {
+      throw new CliError(`Response from ${url.host} was interrupted or timed out.`);
+    }
     let data: unknown = text;
     if (text && res.headers.get("content-type")?.includes("json")) {
       try {
