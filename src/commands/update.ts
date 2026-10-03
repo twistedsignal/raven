@@ -8,18 +8,17 @@ import { CliError } from "../lib/config.js";
 import { examples } from "../lib/help.js";
 import { info, success, withSpinner } from "../lib/output.js";
 
-const REPO = "twistedsignal/raven";
-const PACKAGE_JSON_URL = `https://raw.githubusercontent.com/${REPO}/main/package.json`;
-const TARBALL_URL = `https://github.com/${REPO}/archive/refs/heads/main.tar.gz`;
+const PACKAGE = "@twistedsignal/raven";
+const LATEST_URL = "https://registry.npmjs.org/@twistedsignal%2Fraven/latest";
 
 async function latestVersion(): Promise<string> {
   let res: Response;
   try {
-    res = await fetch(PACKAGE_JSON_URL, { headers: { "cache-control": "no-cache" } });
+    res = await fetch(LATEST_URL, { headers: { "cache-control": "no-cache" } });
   } catch (err) {
-    throw new CliError(`Couldn't reach GitHub: ${(err as Error).message}`);
+    throw new CliError(`Couldn't reach npm: ${(err as Error).message}`);
   }
-  if (!res.ok) throw new CliError(`Couldn't check for updates (GitHub returned ${res.status}).`);
+  if (!res.ok) throw new CliError(`Couldn't check for updates (npm returned ${res.status}).`);
   return ((await res.json()) as { version: string }).version;
 }
 
@@ -41,9 +40,10 @@ function installRoot(): string {
 
 /** Picks the install command matching the package manager Raven was installed with. */
 function installCommand(root: string): [cmd: string, args: string[]] {
-  if (/[\\/]\.?pnpm[\\/]/.test(root)) return ["pnpm", ["add", "-g", TARBALL_URL]];
-  if (/[\\/]\.bun[\\/]/.test(root)) return ["bun", ["add", "-g", TARBALL_URL]];
-  return ["npm", ["install", "-g", TARBALL_URL]];
+  const latest = `${PACKAGE}@latest`;
+  if (/[\\/]\.?pnpm[\\/]/.test(root)) return ["pnpm", ["add", "-g", latest]];
+  if (/[\\/]\.bun[\\/]/.test(root)) return ["bun", ["add", "-g", latest]];
+  return ["npm", ["install", "-g", latest]];
 }
 
 function run(cmd: string, args: string[]): Promise<number> {
